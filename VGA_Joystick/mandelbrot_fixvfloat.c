@@ -116,7 +116,7 @@ int main() {
         uint adc_x_raw = adc_read();
         uint adc_x = 0;
 
-        if (adc_x_raw > 2960 && adc_x_raw < 3000) {
+        if (adc_x_raw > 2940 && adc_x_raw < 3050) {
             adc_x = 2048;
         } else {
             adc_x = adc_x_raw;
@@ -128,9 +128,10 @@ int main() {
         
         if (adc_x == 50){
             /* draw_right_square(1); */
-            fillRect(270,480-290,100,100,RED);
-            sleep_ms(400);
-            fillRect(270,480-290,100,100,0);
+            fillRect(270,480-290,100,100,CYAN);
+            /* sleep_ms(400); */
+            fillRect(170,480-290,100,100,0);
+            fillRect(370,480-290,100,100,0);
             sleep_ms(10);
             /* draw_left_square(1); */
             /* draw_middle_square(0); */
@@ -139,17 +140,19 @@ int main() {
             /* draw_middle_square(1); */
             /* draw_right_square(1); */
             /* draw_left_square(0); */
-            fillRect(170,480-290,100,100,RED);
-            sleep_ms(400);
-            fillRect(170,480-290,100,100,0);
+            fillRect(170,480-290,100,100,BLUE);
+            fillRect(370,480-290,100,100,0);
+            fillRect(270,480-290,100,100,0);
+            /* sleep_ms(400); */
             sleep_ms(10);
         }else if (adc_x < 50) {
             /* draw_middle_square(1); */
             /* draw_left_square(1); */
             /* draw_right_square(0); */
-            fillRect(370,480-290,100,100,RED);
-            sleep_ms(400);
-            fillRect(370,480-290,100,100,0);
+            fillRect(370,480-290,100,100,GREEN);
+            /* sleep_ms(400); */
+            fillRect(170,480-290,100,100,0);
+            fillRect(270,480-290,100,100,0);
             sleep_ms(10);
         }
 
