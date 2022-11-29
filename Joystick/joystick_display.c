@@ -20,20 +20,30 @@ int main() {
         uint adc_x_raw = adc_read();
         adc_select_input(1);
         uint adc_y_raw = adc_read();
+        uint adc_x = 0;
+
+        if (adc_x_raw > 3000 && adc_x_raw < 3060) {
+            adc_x = 2048;
+        } else {
+            adc_x = adc_x_raw;
+        }
+        
+        adc_x = (adc_x * 100) / 4095;
+        printf("%d\n", adc_x);
 
         // Display the joystick position something like this:
         // X: [            o             ]  Y: [              o         ]
-        const uint bar_width = 40;
-        const uint adc_max = (1 << 12) - 1;
-        uint bar_x_pos = adc_x_raw * bar_width / adc_max;
-        uint bar_y_pos = adc_y_raw * bar_width / adc_max;
-        printf("\rX: [");
-        for (int i = 0; i < bar_width; ++i)
-            putchar( i == bar_x_pos ? 'o' : ' ');
-        printf("]  Y: [");
-        for (int i = 0; i < bar_width; ++i)
-            putchar( i == bar_y_pos ? 'o' : ' ');
-        printf("]");
+        /* const uint bar_width = 40; */
+        /* const uint adc_max = (1 << 12) - 1; */
+        /* uint bar_x_pos = adc_x_raw * bar_width / adc_max; */
+        /* uint bar_y_pos = adc_y_raw * bar_width / adc_max; */
+        /* printf("\rX: ["); */
+        /* for (int i = 0; i < bar_width; ++i) */
+        /*     putchar( i == bar_x_pos ? 'o' : ' '); */
+        /* printf("]  Y: ["); */
+        /* for (int i = 0; i < bar_width; ++i) */
+        /*     putchar( i == bar_y_pos ? 'o' : ' '); */
+        /* printf("]"); */
         sleep_ms(50);
 
     }
