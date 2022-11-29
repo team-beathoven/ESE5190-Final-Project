@@ -127,20 +127,32 @@ int main() {
         printf("%d, %d\n", adc_x, adc_x_raw);
         
         if (adc_x == 50){
-            draw_right_square(1);
-            draw_left_square(1);
-            draw_middle_square(0);
+            /* draw_right_square(1); */
+            fillRect(270,480-290,100,100,RED);
+            sleep_ms(400);
+            fillRect(270,480-290,100,100,0);
+            sleep_ms(10);
+            /* draw_left_square(1); */
+            /* draw_middle_square(0); */
         }
         else if (adc_x > 50) {
-            draw_middle_square(1);
-            draw_right_square(1);
-            draw_left_square(0);
+            /* draw_middle_square(1); */
+            /* draw_right_square(1); */
+            /* draw_left_square(0); */
+            fillRect(170,480-290,100,100,RED);
+            sleep_ms(400);
+            fillRect(170,480-290,100,100,0);
+            sleep_ms(10);
         }else if (adc_x < 50) {
-            draw_middle_square(1);
-            draw_left_square(1);
-            draw_right_square(0);
+            /* draw_middle_square(1); */
+            /* draw_left_square(1); */
+            /* draw_right_square(0); */
+            fillRect(370,480-290,100,100,RED);
+            sleep_ms(400);
+            fillRect(370,480-290,100,100,0);
+            sleep_ms(10);
         }
 
-        sleep_ms(100);
+        sleep_ms(200);
     }
 }
