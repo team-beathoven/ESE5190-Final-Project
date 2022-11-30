@@ -3,11 +3,11 @@
  * 
  *
  * HARDWARE CONNECTIONS
- *  - GPIO 24 ---> VGA Hsync
- *  - GPIO 25 ---> VGA Vsync
- *  - GPIO 26 ---> 330 ohm resistor ---> VGA Red
- *  - GPIO 27 ---> 330 ohm resistor ---> VGA Green
- *  - GPIO 28 ---> 330 ohm resistor ---> VGA Blue
+ *  - GPIO 16 ---> VGA Hsync
+ *  - GPIO 17 ---> VGA Vsync
+ *  - GPIO 18 ---> 330 ohm resistor ---> VGA Red
+ *  - GPIO 19 ---> 330 ohm resistor ---> VGA Green
+ *  - GPIO 20 ---> 330 ohm resistor ---> VGA Blue
  *  - RP2040 GND ---> VGA GND
  *
  * RESOURCES USED
@@ -23,7 +23,7 @@
 
 
 // Give the I/O pins that we're using some names that make sense - usable in main()
-enum vga_pins {HSYNC=24, VSYNC, RED_PIN, GREEN_PIN, BLUE_PIN} ;
+enum vga_pins {HSYNC=16, VSYNC, RED_PIN, GREEN_PIN, BLUE_PIN} ;
 
 // We can only produce 8 (3-bit) colors, so let's give them readable names - usable in main()
 enum colors {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE} ;
