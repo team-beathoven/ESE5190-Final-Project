@@ -126,7 +126,7 @@ int main() {
     // Make sure GPIO is high-impedance, no pullups etc
     adc_gpio_init(26);
 
-    uint blue_indx = 20, green_indx = 80, cyan_indx = 60, joystick_pos = 0;
+    uint blue_indx = 20, green_indx = 40, cyan_indx = 60, joystick_pos = 0;
     uint curr_score = 0;
 
     drawChar(30, 30, 'S', WHITE, 0, 2);
@@ -137,6 +137,7 @@ int main() {
     drawChar(105, 30, ':', WHITE, 0, 2);
     update_score(curr_score);
 
+    sleep_ms(5000);
 
     while(true){
         joystick_pos = act_adc();
@@ -151,6 +152,9 @@ int main() {
                 fillRect(RIGHT_VERT_TILES,360,40,100,0);
                 curr_score += 1;
                 update_score(curr_score);
+            } else {
+                fillRect(RIGHT_VERT,460,60,20,0);
+                break;
             }
         }
 
@@ -164,6 +168,9 @@ int main() {
                 fillRect(MID_VERT_TILES,360,40,100,0);
                 curr_score += 1;
                 update_score(curr_score);
+            } else {
+                fillRect(MID_VERT,460,60,20,0);
+                break;
             }
         }
 
@@ -177,6 +184,9 @@ int main() {
                 fillRect(LEFT_VERT_TILES,360,40,100,0);
                 curr_score += 1;
                 update_score(curr_score);
+            } else {
+                fillRect(LEFT_VERT,460,60,20,0);
+                break;
             }
         }
         
@@ -189,5 +199,23 @@ int main() {
         green_indx++;
         blue_indx++;
     }
+
+    fillRect(LEFT_VERT_TILES,(blue_indx*5),40,100,0);
+    fillRect(MID_VERT_TILES,(green_indx*5),40,100,0);
+    fillRect(RIGHT_VERT_TILES,(cyan_indx*5),40,100,0);
+
+
+    drawChar(180, 240, 'G', WHITE, 0, 5);
+    drawChar(210, 240, 'A', WHITE, 0, 5);
+    drawChar(240, 240, 'M', WHITE, 0, 5);
+    drawChar(270, 240, 'E', WHITE, 0, 5);
+    drawChar(300, 240, ' ', WHITE, 0, 5);
+    drawChar(330, 240, 'O', WHITE, 0, 5);
+    drawChar(360, 240, 'V', WHITE, 0, 5);
+    drawChar(390, 240, 'E', WHITE, 0, 5);
+    drawChar(420, 240, 'R', WHITE, 0, 5);
+    drawChar(450, 240, '!', WHITE, 0, 5);
+    drawChar(480, 240, '!', WHITE, 0, 5);
+
     return 0;
 }
