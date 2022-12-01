@@ -32,6 +32,7 @@
 #include "pico/multicore.h"
 #include "hardware/pio.h"
 #include "hardware/dma.h"
+#include "hardware/adc.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// Stuff for Mandelbrot ///////////////////////////////////////////////////////////////
@@ -50,45 +51,44 @@ typedef signed int fix28 ;
 // Maximum number of iterations
 #define max_count 1000
 
-void draw_left_square(){
-    drawHLine(170,290,100,BLUE);
-    drawVLine(170,190,100,WHITE);
-    drawHLine(170,190,100,BLUE);
-    drawVLine(270,190,100,WHITE);
-    sleep_ms(300);
 
-    drawHLine(170,290,100,0);
-    drawVLine(170,190,100,0);
-    drawHLine(170,190,100,0);
-    drawVLine(270,190,100,0);
+uint act_adc() {
+    adc_select_input(0);
+    uint adc_x_raw = adc_read();
+    uint adc_x = 0;
+
+    if (adc_x_raw > 2000 && adc_x_raw < 2060) {
+        adc_x = 2048;
+    } else {
+        adc_x = adc_x_raw;
+    }
+
+    adc_x = (adc_x * 100) / 4095;
+
+    printf("%d, %d\n", adc_x, adc_x_raw);
+    
+    if (adc_x == 50){
+        fillRect(290,460,60,20,WHITE);
+        fillRect(170,460,60,20,0);
+        fillRect(410,460,60,20,0);
+    }
+    else if (adc_x > 50) {
+        fillRect(410,460,60,20,WHITE);
+        fillRect(170,460,60,20,0);
+        fillRect(290,460,60,20,0);
+    }else if (adc_x < 50) {
+        fillRect(170,460,60,20,WHITE);
+        fillRect(290,460,60,20,0);
+        fillRect(410,460,60,20,0);
+    }
     sleep_ms(10);
+    return adc_x;
 }
 
-void draw_middle_square(){
-    drawHLine(270,290,100,BLUE);
-    drawVLine(270,190,100,WHITE);
-    drawHLine(270,190,100,BLUE);
-    drawVLine(370,190,100,WHITE);
-    sleep_ms(300);
-
-    drawHLine(270,290,100,0);
-    drawVLine(270,190,100,0);
-    drawHLine(270,190,100,0);
-    drawVLine(370,190,100,0);
-    sleep_ms(10);
-}
-
-void draw_right_square(){
-    drawHLine(370,290,100,BLUE);
-    drawVLine(370,190,100,WHITE);
-    drawHLine(370,190,100,BLUE);
-    drawVLine(470,190,100,WHITE);
-    sleep_ms(300);
-
-    drawHLine(370,290,100,0);
-    drawVLine(370,190,100,0);
-    drawHLine(370,190,100,0);
-    drawVLine(470,190,100,0);
+void draw_fill_rect(short x, short y, short w, short h, char color, short inc_dec){
+    fillRect(x,y,w,h,color);
+    fillRect(x,y,w,inc_dec,0);
+    fillRect(x,y+h,w,inc_dec,color);
     sleep_ms(10);
 }
 
@@ -100,29 +100,41 @@ int main() {
     // Initialize VGA
     initVGA() ;
 
-    while(true){
-        
-        for (int i=0;i<160;i++){
-            
-            fillRect(170,(i*3),20,100,BLUE);
-            fillRect(170,(i*3),20,5,0);
-            fillRect(170,(i*3)+100,20,5,BLUE);
-            sleep_ms(10);
-            
-            fillRect(270,(i*3),20,100,GREEN);
-            fillRect(270,(i*3),20,5,0);
-            fillRect(270,(i*3)+100,20,5,GREEN);
-            sleep_ms(10);
-            
-            fillRect(370,i*3,20,100,CYAN);
-            fillRect(370,i*3,20,5,0);
-            fillRect(370,(i*3)+100,20,5,CYAN);
-            sleep_ms(10);
+    /* int pattern_array[6] = {20, 80, 20, 120, 60, 20} */
+    
+    adc_init();
+    // Make sure GPIO is high-impedance, no pullups etc
+    adc_gpio_init(26);
 
-            fillRect(170,480,20,1,0);
-            fillRect(270,480,20,1,0);
-            fillRect(370,480,20,1,0);
+    uint blue_indx = 20, green_indx = 80, cyan_indx = 60, joystick_pos = 0;
+
+    while(true){
+        if (cyan_indx > 71) {
+            cyan_indx = 0;
+            fillRect(420,360,40,100,0);
         }
+
+        if (green_indx > 71) {
+            green_indx = 0;
+            fillRect(300,360,40,100,0);
+        }
+
+        if (blue_indx > 71) {
+            blue_indx = 0;
+            fillRect(180,360,40,100,0);
+        }
+        
+        joystick_pos = act_adc();
+
+        draw_fill_rect(180,(blue_indx*5),40,100,BLUE,5);
+        draw_fill_rect(300,(green_indx*5),40,100,GREEN,5);
+        draw_fill_rect(420,(cyan_indx*5),40,100,CYAN,5);
+
+        cyan_indx++;
+        green_indx++;
+        blue_indx++;
+
         sleep_ms(100);
     }
+    return 0;
 }
