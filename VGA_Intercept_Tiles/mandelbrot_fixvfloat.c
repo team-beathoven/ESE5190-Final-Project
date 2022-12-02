@@ -230,7 +230,7 @@ int main() {
         while (buttons_status == 0){
             buttons_status = register_read(RESTART_PIN_REG);
             printf("0x%08x\n", buttons_status);
-            sleep_ms(3000);
+            sleep_ms(10);
         }
 
         fillRect(180,240,400,100,0);
