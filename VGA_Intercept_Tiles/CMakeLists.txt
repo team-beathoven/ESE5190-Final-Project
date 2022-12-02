@@ -17,7 +17,7 @@ pico_enable_stdio_usb(mandelbrot-fixvfloat 1)
 pico_enable_stdio_uart(mandelbrot-fixvfloat 0)
 
 # must match with executable name and source file names
-target_sources(mandelbrot-fixvfloat PRIVATE mandelbrot_fixvfloat.c vga_graphics.c)
+target_sources(mandelbrot-fixvfloat PRIVATE mandelbrot_fixvfloat.c vga_graphics.c registers.h)
 
 # must match with executable name
 target_link_libraries(mandelbrot-fixvfloat PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_adc)

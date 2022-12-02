@@ -12,11 +12,11 @@
  * https://vanhunteradams.com/Pico/VGA/VGA.html
  *
  * HARDWARE CONNECTIONS
- *  - GPIO 24 ---> VGA Hsync
- *  - GPIO 25 ---> VGA Vsync
- *  - GPIO 26 ---> 330 ohm resistor ---> VGA Red
- *  - GPIO 27 ---> 330 ohm resistor ---> VGA Green
- *  - GPIO 28 ---> 330 ohm resistor ---> VGA Blue
+ *  - GPIO 16 ---> VGA Hsync
+ *  - GPIO 17 ---> VGA Vsync
+ *  - GPIO 18 ---> 330 ohm resistor ---> VGA Red
+ *  - GPIO 19 ---> 330 ohm resistor ---> VGA Green
+ *  - GPIO 20 ---> 330 ohm resistor ---> VGA Blue
  *  - RP2040 GND ---> VGA GND
  *
  * RESOURCES USED
@@ -33,6 +33,7 @@
 #include "hardware/pio.h"
 #include "hardware/dma.h"
 #include "hardware/adc.h"
+#include "registers.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////// Stuff for Mandelbrot ///////////////////////////////////////////////////////////////
@@ -59,6 +60,9 @@ typedef signed int fix28 ;
 #define MID_VERT_TILES 300
 #define RIGHT_VERT_TILES 440
 
+#define RESTART_PIN 4
+#define RESTART_PIN_REG ((volatile uint32_t *)(IO_BANK0_BASE + 0x010))
+
 uint act_adc() {
     adc_select_input(0);
     uint adc_x_raw = adc_read();
@@ -72,7 +76,7 @@ uint act_adc() {
 
     adc_x = (adc_x * 100) / 4095;
 
-    printf("%d, %d\n", adc_x, adc_x_raw);
+    /* printf("%d, %d\n", adc_x, adc_x_raw); */
     
     if (adc_x == 50){
         fillRect(MID_VERT,460,60,20,WHITE);
@@ -114,6 +118,9 @@ void update_score(uint score){
 
 int main() {
 
+    gpio_init(RESTART_PIN);
+    gpio_set_dir(RESTART_PIN, GPIO_IN);
+
     // Initialize stdio
     stdio_init_all();
 
@@ -127,7 +134,7 @@ int main() {
     adc_gpio_init(26);
 
     uint blue_indx = 20, green_indx = 40, cyan_indx = 60, joystick_pos = 0;
-    uint curr_score = 0;
+    uint curr_score = 0, buttons_status = 0;
 
     drawChar(30, 30, 'S', WHITE, 0, 2);
     drawChar(45, 30, 'c', WHITE, 0, 2);
@@ -139,83 +146,97 @@ int main() {
 
     sleep_ms(5000);
 
-    while(true){
-        joystick_pos = act_adc();
-        
-        if (cyan_indx > 71) {
-            cyan_indx = 0;
-            fillRect(RIGHT_VERT_TILES,360,40,100,0);
-            if (joystick_pos > 50) {
-                sleep_ms(40);
-                fillRect(RIGHT_VERT_TILES,360,40,100,RED);
-                sleep_ms(40);
+    while(true) {
+        while (true){
+            joystick_pos = act_adc();
+            
+            if (cyan_indx > 71) {
+                cyan_indx = 0;
                 fillRect(RIGHT_VERT_TILES,360,40,100,0);
-                curr_score += 1;
-                update_score(curr_score);
-            } else {
-                fillRect(RIGHT_VERT,460,60,20,0);
-                break;
+                if (joystick_pos > 50) {
+                    sleep_ms(40);
+                    fillRect(RIGHT_VERT_TILES,360,40,100,RED);
+                    sleep_ms(40);
+                    fillRect(RIGHT_VERT_TILES,360,40,100,0);
+                    curr_score += 1;
+                    update_score(curr_score);
+                } else {
+                    fillRect(RIGHT_VERT,460,60,20,0);
+                    break;
+                }
             }
-        }
 
-        if (green_indx > 71) {
-            green_indx = 0;
-            fillRect(MID_VERT_TILES,360,40,100,0);
-            if (joystick_pos == 50) {
-                sleep_ms(40);
-                fillRect(MID_VERT_TILES,360,40,100,RED);
-                sleep_ms(40);
+            if (green_indx > 71) {
+                green_indx = 0;
                 fillRect(MID_VERT_TILES,360,40,100,0);
-                curr_score += 1;
-                update_score(curr_score);
-            } else {
-                fillRect(MID_VERT,460,60,20,0);
-                break;
+                if (joystick_pos == 50) {
+                    sleep_ms(40);
+                    fillRect(MID_VERT_TILES,360,40,100,RED);
+                    sleep_ms(40);
+                    fillRect(MID_VERT_TILES,360,40,100,0);
+                    curr_score += 1;
+                    update_score(curr_score);
+                } else {
+                    fillRect(MID_VERT,460,60,20,0);
+                    break;
+                }
             }
-        }
 
-        if (blue_indx > 71) {
-            blue_indx = 0;
-            fillRect(LEFT_VERT_TILES,360,40,100,0);
-            if (joystick_pos < 50) {
-                sleep_ms(40);
-                fillRect(LEFT_VERT_TILES,360,40,100,RED);
-                sleep_ms(40);
+            if (blue_indx > 71) {
+                blue_indx = 0;
                 fillRect(LEFT_VERT_TILES,360,40,100,0);
-                curr_score += 1;
-                update_score(curr_score);
-            } else {
-                fillRect(LEFT_VERT,460,60,20,0);
-                break;
+                if (joystick_pos < 50) {
+                    sleep_ms(40);
+                    fillRect(LEFT_VERT_TILES,360,40,100,RED);
+                    sleep_ms(40);
+                    fillRect(LEFT_VERT_TILES,360,40,100,0);
+                    curr_score += 1;
+                    update_score(curr_score);
+                } else {
+                    fillRect(LEFT_VERT,460,60,20,0);
+                    break;
+                }
             }
+            
+
+            draw_fill_rect(LEFT_VERT_TILES,(blue_indx*5),40,100,BLUE,5);
+            draw_fill_rect(MID_VERT_TILES,(green_indx*5),40,100,GREEN,5);
+            draw_fill_rect(RIGHT_VERT_TILES,(cyan_indx*5),40,100,CYAN,5);
+
+            cyan_indx++;
+            green_indx++;
+            blue_indx++;
         }
+
+        fillRect(LEFT_VERT_TILES,(blue_indx*5),40,100,0);
+        fillRect(MID_VERT_TILES,(green_indx*5),40,100,0);
+        fillRect(RIGHT_VERT_TILES,(cyan_indx*5),40,100,0);
+
+
+        drawChar(180, 240, 'G', WHITE, 0, 5);
+        drawChar(210, 240, 'A', WHITE, 0, 5);
+        drawChar(240, 240, 'M', WHITE, 0, 5);
+        drawChar(270, 240, 'E', WHITE, 0, 5);
+        drawChar(300, 240, ' ', WHITE, 0, 5);
+        drawChar(330, 240, 'O', WHITE, 0, 5);
+        drawChar(360, 240, 'V', WHITE, 0, 5);
+        drawChar(390, 240, 'E', WHITE, 0, 5);
+        drawChar(420, 240, 'R', WHITE, 0, 5);
+        drawChar(450, 240, '!', WHITE, 0, 5);
+        drawChar(480, 240, '!', WHITE, 0, 5);
         
+        buttons_status = register_read(RESTART_PIN_REG);
+        printf("0x%08x\n", buttons_status);
+        while (buttons_status == 0){
+            buttons_status = register_read(RESTART_PIN_REG);
+            printf("0x%08x\n", buttons_status);
+            sleep_ms(3000);
+        }
 
-        draw_fill_rect(LEFT_VERT_TILES,(blue_indx*5),40,100,BLUE,5);
-        draw_fill_rect(MID_VERT_TILES,(green_indx*5),40,100,GREEN,5);
-        draw_fill_rect(RIGHT_VERT_TILES,(cyan_indx*5),40,100,CYAN,5);
+        fillRect(180,240,400,100,0);
+        curr_score = 0;
+        update_score(curr_score);
 
-        cyan_indx++;
-        green_indx++;
-        blue_indx++;
-    }
-
-    fillRect(LEFT_VERT_TILES,(blue_indx*5),40,100,0);
-    fillRect(MID_VERT_TILES,(green_indx*5),40,100,0);
-    fillRect(RIGHT_VERT_TILES,(cyan_indx*5),40,100,0);
-
-
-    drawChar(180, 240, 'G', WHITE, 0, 5);
-    drawChar(210, 240, 'A', WHITE, 0, 5);
-    drawChar(240, 240, 'M', WHITE, 0, 5);
-    drawChar(270, 240, 'E', WHITE, 0, 5);
-    drawChar(300, 240, ' ', WHITE, 0, 5);
-    drawChar(330, 240, 'O', WHITE, 0, 5);
-    drawChar(360, 240, 'V', WHITE, 0, 5);
-    drawChar(390, 240, 'E', WHITE, 0, 5);
-    drawChar(420, 240, 'R', WHITE, 0, 5);
-    drawChar(450, 240, '!', WHITE, 0, 5);
-    drawChar(480, 240, '!', WHITE, 0, 5);
-
+        }
     return 0;
 }
