@@ -48,9 +48,12 @@
  */
 /* #include "sample.h" */
 /* #include "din.h" */
-#include "Na-2.h"
+#include "Na_2.h"
+#include "Din_2.h"
+#include "Tin_2.h"
 int wav_position = 0;
 int flag_start = 0;
+int audio_note_indx = 0;
 
 /*
  * PWM Interrupt Handler which outputs PWM level and advances the 
@@ -65,7 +68,13 @@ void pwm_interrupt_handler() {
     if (wav_position < (WAV_DATA_LENGTH<<3) - 1) { 
         // set pwm level 
         // allow the pwm value to repeat for 8 cycles this is >>3 
-        pwm_set_gpio_level(AUDIO_PIN, WAV_DATA[wav_position>>3]);  
+        if (audio_note_indx == 0) {
+            pwm_set_gpio_level(AUDIO_PIN, WAV_DATA_DIN[wav_position>>3]);
+        } else if (audio_note_indx == 1) {
+            pwm_set_gpio_level(AUDIO_PIN, WAV_DATA_TIN[wav_position>>3]);
+        } else {
+            pwm_set_gpio_level(AUDIO_PIN, WAV_DATA_NA[wav_position>>3]);
+        }
         wav_position++;
     } else {
         // reset to start
@@ -73,6 +82,11 @@ void pwm_interrupt_handler() {
         if (flag_start == 1) {
             wav_position = 0;
             flag_start = 0;
+            if (audio_note_indx < 2) {
+                audio_note_indx += 1;
+            } else {
+                audio_note_indx = 0;
+            }
         }
     }
 }
