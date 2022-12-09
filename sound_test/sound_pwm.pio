@@ -7,43 +7,38 @@
 ;{    50 us  }{     50us    }
 
 .program sound_pwm
+; .side_set 1 opt
+; 
+;     pull noblock side 0
+;     mov x, osr
+;     mov y, isr
+; gen_signal_low:
+;     jmp x!=y gen_signal_high side 1
+; gen_signal_high:
+;     jmp y-- gen_signal_low
+
 .side_set 1 opt
 
-    pull noblock
-    mov x, osr
-    mov y, isr
-gen_signal_low:
-    jmp x-- gen_signal_low  side 0
-gen_signal_high:
-    jmp y-- gen_signal_high side 1
-
+    pull noblock    side 0 ; Pull from FIFO to OSR if available, else copy X to OSR.
+    mov x, osr             ; Copy most-recently-pulled value back to scratch X
+    mov y, isr             ; ISR contains PWM period. Y used as counter.
+countloop:
+    jmp x!=y noset         ; Set pin high if X == Y, keep the two paths length matched
+    jmp skip        side 1
+noset:
+    nop                    ; Single dummy cycle to keep the two paths the same length
+skip:
+    jmp y-- countloop      ; Loop until Y hits 0, then pull a fresh PWM value from FIFO
 
 % c-sdk {
 static inline void sound_pwm_program_init(PIO pio, uint sm, uint offset, uint pin) {
-
-    // creates state machine configuration object c, sets
-    // to default configurations. I believe this function is auto-generated
-    // and gets a name of <program name>_program_get_default_config
-    // Yes, page 40 of SDK guide
     pio_sm_config c = sound_pwm_program_get_default_config(offset);
-
-    // Map the state machine's SET pin group to one pin, namely the `pin`
-    // parameter to this function.
     sm_config_set_set_pins(&c, pin, 1);
-
-    // Set clock division (div by 125 for 1 MHz state machine)
-    sm_config_set_clkdiv(&c, 125);
-
-    // Set this pin's GPIO function (connect PIO to the pad)
+    sm_config_set_clkdiv(&c, 2500); // 50 ticks of the system clock should be 0.001s => 1ms.
     pio_gpio_init(pio, pin);
-    
-    // Set the pin direction to output at the PIO
     pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
-
-    // Load our configuration, and jump to the start of the program
+    sm_config_set_sideset_pins(&c, pin);
     pio_sm_init(pio, sm, offset, &c);
-
-    // Set the state machine running
     // pio_sm_set_enabled(pio, sm, true);
 }
 %}

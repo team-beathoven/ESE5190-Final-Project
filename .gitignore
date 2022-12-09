@@ -5,3 +5,5 @@
 /VGA_Animate_HSEQ/build
 /VGA_Intercept_Tiles/build
 /sound_test/build
+/pico_pwm_example/build
+/VGA_Audio_Integrate/build
