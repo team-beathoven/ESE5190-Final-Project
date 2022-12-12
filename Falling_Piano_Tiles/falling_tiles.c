@@ -60,9 +60,9 @@
  * if you want to know how to make these please see the python code
  * for converting audio samples into static arrays. 
  */
-#include "A_major.h"
-#include "E_major.h"
-#include "B_major.h"
+#include "audio_notes/A_major.h"
+#include "audio_notes/E_major.h"
+#include "audio_notes/B_major.h"
 int wav_position = 0;
 int flag_start = 0;
 int audio_note_indx = 0;
