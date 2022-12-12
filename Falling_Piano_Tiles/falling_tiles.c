@@ -393,7 +393,7 @@ int main() {
         fillRect(MID_VERT_TILES,(green_indx*4),40,100,0);
         fillRect(RIGHT_VERT_TILES,(cyan_indx*4),40,100,0);
 
-        // Displayy Game over.
+        // Display Game over.
         drawChar(180, 240, 'G', WHITE, 0, 5);
         drawChar(210, 240, 'A', WHITE, 0, 5);
         drawChar(240, 240, 'M', WHITE, 0, 5);
