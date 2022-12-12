@@ -85,19 +85,19 @@ void pwm_interrupt_handler() {
             if (interception_side == 0 || interception_side == 1) {
                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]-40);
             }
         } else if (audio_note_indx == 1) {
             if (interception_side == 0 || interception_side == 1) {
                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]-40);
             }
         } else {
             if (interception_side == 0 || interception_side == 1) {
                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]-40);
             }
         }
         wav_position++;
@@ -126,19 +126,19 @@ void pwm_interrupt_handler_2() {
                 pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_A[wav_position>>3]);
             } else {
                 sleep_ms(10);
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_A[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_A[wav_position>>3]-40);
             }
         } else if (audio_note_indx == 1) {
             if (interception_side == 1 || interception_side == 2) {
                 pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_B[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_B[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_B[wav_position>>3]-40);
             }
         } else {
             if (interception_side == 1 || interception_side == 2) {
                 pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_E[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_E[wav_position>>3]-60);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_E[wav_position>>3]-40);
             }
         }
         wav_position++;
