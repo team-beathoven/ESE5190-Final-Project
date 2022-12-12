@@ -1,17 +1,15 @@
 /**
- * Hunter Adams (vha3@cornell.edu)
+ * ESE5190 - Final Project
+ * Ruturaj A. Nanoti (ruturajn@seas.upenn.edu)
+ * Siddhant Mathur (siddm14@seas.upenn.edu)
+ * Arnav Gadre (arnavg05@seas.upenn.edu)
  * 
- * Mandelbrot set calculation and visualization
- * Uses PIO-assembly VGA driver.
- * 
- * Core 1 draws the bottom half of the set using floating point.
- * Core 0 draws the top half of the set using fixed point.
- * This illustrates the speed improvement of fixed point over floating point.
- * 
- * https://vanhunteradams.com/FixedPoint/FixedPoint.html
- * https://vanhunteradams.com/Pico/VGA/VGA.html
+ * Emulating the famous game - `Piano Tiles`.
+ *
  *
  * HARDWARE CONNECTIONS
+ *  
+ *  VGA:
  *  - GPIO 16 ---> VGA Hsync
  *  - GPIO 17 ---> VGA Vsync
  *  - GPIO 18 ---> 330 ohm resistor ---> VGA Red
@@ -19,12 +17,27 @@
  *  - GPIO 20 ---> 330 ohm resistor ---> VGA Blue
  *  - RP2040 GND ---> VGA GND
  *
+ *  Audio Jack:
+ *  - GPIO 28 ---> FEMALE AUDIO JACK : RNG
+ *  - GPIO 15 ---> FEMALE AUDIO JACK : TIP
+ *  - RP2040 GND ---> FEMALE AUDIO JACK : GND
+ *
+ *  Restart Pin:
+ *  - GPIO 4 ---> One end of the switch
+ *  - RP2040 3.3 V ---> Other end of the switch
+ *
+ *  Joystick:
+ *  - GPIO 26 ---> Joystick : VRx
+ *  - RP2040 GND ---> Joystick : GND
+ *  - RP2040 3.3 V ---> Joystick : 5V
+ *
  * RESOURCES USED
  *  - PIO state machines 0, 1, and 2 on PIO instance 0
  *  - DMA channels 0 and 1
  *  - 153.6 kBytes of RAM (for pixel color data)
  *
  */
+
 #include "vga_graphics.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,8 +60,6 @@
  * if you want to know how to make these please see the python code
  * for converting audio samples into static arrays. 
  */
-/* #include "sample.h" */
-/* #include "din.h" */
 #include "A_major.h"
 #include "E_major.h"
 #include "B_major.h"
@@ -105,34 +116,6 @@ void pwm_interrupt_handler() {
     }
 }
 
-/* void pwm_interrupt_handler() { */
-/*     pwm_clear_irq(pwm_gpio_to_slice_num(AUDIO_PIN_LEFT)); */    
-/*     if (wav_position < (WAV_DATA_LENGTH<<3) - 1) { */ 
-/*         // set pwm level */ 
-/*         // allow the pwm value to repeat for 8 cycles this is >>3 */ 
-/*         if (audio_note_indx == 0) { */
-/*                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]); */
-/*         } else if (audio_note_indx == 1) { */
-/*                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]); */
-/*         } else { */
-/*                 pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]); */
-/*         } */
-/*         wav_position++; */
-/*     } else { */
-/*         // reset to start */
-/*         pwm_set_gpio_level(AUDIO_PIN_LEFT, 0); */  
-/*         if (flag_start == 1) { */
-/*             wav_position = 0; */
-/*             flag_start = 0; */
-/*             if (audio_note_indx < 2) { */
-/*                 audio_note_indx += 1; */
-/*             } else { */
-/*                 audio_note_indx = 0; */
-/*             } */
-/*         } */
-/*     } */
-/* } */
-
 void pwm_interrupt_handler_2() {
     pwm_clear_irq(pwm_gpio_to_slice_num(AUDIO_PIN_RIGHT));    
     if (wav_position < (WAV_DATA_LENGTH<<3) - 1 && flag_start == 1) { 
@@ -174,23 +157,7 @@ void pwm_interrupt_handler_2() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////// Stuff for Mandelbrot ///////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Fixed point data type
-typedef signed int fix28 ;
-#define multfix28(a,b) ((fix28)(((( signed long long)(a))*(( signed long long)(b)))>>28)) 
-#define float2fix28(a) ((fix28)((a)*268435456.0f)) // 2^28
-#define fix2float28(a) ((float)(a)/268435456.0f) 
-#define int2fix28(a) ((a)<<28)
-// the fixed point value 4
-#define FOURfix28 0x40000000 
-#define SIXTEENTHfix28 0x01000000
-#define ONEfix28 0x10000000
-
-// Maximum number of iterations
-#define max_count 1000
-
+// Define the co-ordinates for the Tiles and the Joystick controlled base.
 #define LEFT_VERT 150
 #define MID_VERT 290
 #define RIGHT_VERT 430
@@ -202,6 +169,8 @@ typedef signed int fix28 ;
 #define RESTART_PIN 4
 #define RESTART_PIN_REG ((volatile uint32_t *)(IO_BANK0_BASE + 0x010))
 
+// Define a function to draw the base tile, based on the current joystick
+// position.
 uint act_adc() {
     adc_select_input(0);
     uint adc_x_raw = adc_read();
@@ -235,6 +204,7 @@ uint act_adc() {
     return adc_x;
 }
 
+// Helper function to abstract the animation.
 void draw_fill_rect(short x, short y, short w, short h, char color, short inc_dec){
     fillRect(x,y,w,h,color);
     fillRect(x,y,w,inc_dec,0);
@@ -242,6 +212,7 @@ void draw_fill_rect(short x, short y, short w, short h, char color, short inc_de
     sleep_ms(10);
 }
 
+// Helper function to keep track of the user's score.
 void update_score(uint score){
     fillRect(30,60,240,20,0);
     /* setCursor(30, 30); */
@@ -267,17 +238,16 @@ int main() {
     // Setup PWM interrupt to fire when PWM cycle is complete
     pwm_clear_irq(audio_pin_slice);
     pwm_clear_irq(audio_pin_slice_2);
-    /* pwm_set_irq_enabled(audio_pin_slice, true); */
-    /* pwm_set_irq_enabled(audio_pin_slice_2, true); */
     pwm_set_irq_mask_enabled((1u<<6) | (1u<<7), true);
+
     // set the handle function above
-    /* irq_set_exclusive_handler(PWM_IRQ_WRAP, pwm_interrupt_handler); */ 
     irq_add_shared_handler(PWM_IRQ_WRAP, pwm_interrupt_handler, 0);
     irq_add_shared_handler(PWM_IRQ_WRAP, pwm_interrupt_handler_2, 1);
     irq_set_enabled(PWM_IRQ_WRAP, true);
 
     // Setup PWM for audio output
     pwm_config config = pwm_get_default_config();
+    
     /* Base clock 176,000,000 Hz divide by wrap 250 then the clock divider further divides
      * to set the interrupt rate. 
      * 
@@ -305,10 +275,9 @@ int main() {
 
     // Initialize VGA
     initVGA() ;
-
-    /* int pattern_array[6] = {20, 80, 20, 120, 60, 20} */
     
     adc_init();
+    
     // Make sure GPIO is high-impedance, no pullups etc
     adc_gpio_init(26);
 

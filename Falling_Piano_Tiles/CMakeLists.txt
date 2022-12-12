@@ -6,21 +6,21 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
-add_executable(mandelbrot-fixvfloat)
+add_executable(falling_tiles)
 
 # must match with pio filename and executable name from above
-pico_generate_pio_header(mandelbrot-fixvfloat ${CMAKE_CURRENT_LIST_DIR}/hsync.pio)
-pico_generate_pio_header(mandelbrot-fixvfloat ${CMAKE_CURRENT_LIST_DIR}/vsync.pio)
-pico_generate_pio_header(mandelbrot-fixvfloat ${CMAKE_CURRENT_LIST_DIR}/rgb.pio)
+pico_generate_pio_header(falling_tiles ${CMAKE_CURRENT_LIST_DIR}/hsync.pio)
+pico_generate_pio_header(falling_tiles ${CMAKE_CURRENT_LIST_DIR}/vsync.pio)
+pico_generate_pio_header(falling_tiles ${CMAKE_CURRENT_LIST_DIR}/rgb.pio)
 
-pico_enable_stdio_usb(mandelbrot-fixvfloat 1)
-pico_enable_stdio_uart(mandelbrot-fixvfloat 0)
+pico_enable_stdio_usb(falling_tiles 1)
+pico_enable_stdio_uart(falling_tiles 0)
 
 # must match with executable name and source file names
-target_sources(mandelbrot-fixvfloat PRIVATE mandelbrot_fixvfloat.c vga_graphics.c registers.h sample.h A_major.h B_major.h E_major.h)
+target_sources(falling_tiles PRIVATE falling_tiles.c vga_graphics.c registers.h ./audio_notes/A_major.h ./audio_notes/B_major.h ./audio_notes/E_major.h)
 
 # must match with executable name
-target_link_libraries(mandelbrot-fixvfloat PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_adc hardware_pwm)
+target_link_libraries(falling_tiles PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_adc hardware_pwm)
 
 # must match with executable name
-pico_add_extra_outputs(mandelbrot-fixvfloat)
+pico_add_extra_outputs(falling_tiles)
