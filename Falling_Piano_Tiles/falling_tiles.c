@@ -266,6 +266,7 @@ int main() {
 
     pwm_set_gpio_level(AUDIO_PIN_LEFT, 0);
     pwm_set_gpio_level(AUDIO_PIN_RIGHT, 0);
+    /////////////////////////////////// AUDIO CODE //////////////////////////////////////////
 
     gpio_init(RESTART_PIN);
     gpio_set_dir(RESTART_PIN, GPIO_IN);
@@ -281,6 +282,7 @@ int main() {
     // Make sure GPIO is high-impedance, no pullups etc
     adc_gpio_init(26);
 
+    // Initialize indices for the tiles, the score for the user, and the restart button status.
     uint blue_indx = 20, green_indx = 40, cyan_indx = 60, joystick_pos = 0;
     uint curr_score = 0, buttons_status = 0;
 
@@ -291,13 +293,20 @@ int main() {
     drawChar(90, 30, 'e', WHITE, 0, 2);
     drawChar(105, 30, ':', WHITE, 0, 2);
     update_score(curr_score);
-
+    
+    // Sleep for some time, to give the user a chance to get READY.
     sleep_ms(5000);
 
     while(true) {
         while (true){
+            // Get the current joystick position.
             joystick_pos = act_adc();
             
+            // Check if the cyan colored tile, reached the bottom of the screen. If so
+            // reset it's co-ordinates back to the top, and check if it was intercepted,
+            // if it was change the tile's color to RED, and make it blink twice, suggesting
+            // that the tile was intercepted, and update the user's score. If the tile was missed,
+            // exit the loop.
             if (cyan_indx > 89) {
                 cyan_indx = 0;
                 fillRect(RIGHT_VERT_TILES,360,40,100,0);
@@ -317,6 +326,12 @@ int main() {
                 }
             }
 
+
+            // Check if the green colored tile, reached the bottom of the screen. If so
+            // reset it's co-ordinates back to the top, and check if it was intercepted,
+            // if it was change the tile's color to RED, and make it blink twice, suggesting
+            // that the tile was intercepted, and update the user's score. If the tile was missed,
+            // exit the loop.
             if (green_indx > 89) {
                 green_indx = 0;
                 fillRect(MID_VERT_TILES,360,40,100,0);
@@ -335,7 +350,12 @@ int main() {
                     break;
                 }
             }
-
+            
+            // Check if the blue colored tile, reached the bottom of the screen. If so
+            // reset it's co-ordinates back to the top, and check if it was intercepted,
+            // if it was change the tile's color to RED, and make it blink twice, suggesting
+            // that the tile was intercepted, and update the user's score. If the tile was missed,
+            // exit the loop.
             if (blue_indx > 89) {
                 blue_indx = 0;
                 fillRect(LEFT_VERT_TILES,360,40,100,0);
@@ -355,22 +375,25 @@ int main() {
                 }
             }
             
-
+            // Animate the tiles, by erasing a small rectangle of dimensions 4x40 from it's
+            // top and creating a rectangle at the bottom with the exact same dimensions. This
+            // emulates the falling tiles.
             draw_fill_rect(LEFT_VERT_TILES,(blue_indx*4),40,100,BLUE,4);
             draw_fill_rect(MID_VERT_TILES,(green_indx*4),40,100,GREEN,4);
             draw_fill_rect(RIGHT_VERT_TILES,(cyan_indx*4),40,100,CYAN,4);
-
+            
+            // Update the co-ordinates for each of the tile.
             cyan_indx++;
             green_indx++;
             blue_indx++;
-            printf("Interception : %d", interception_side);
         }
-
+        
+        // Erase the tiles, to clear the screen.
         fillRect(LEFT_VERT_TILES,(blue_indx*4),40,100,0);
         fillRect(MID_VERT_TILES,(green_indx*4),40,100,0);
         fillRect(RIGHT_VERT_TILES,(cyan_indx*4),40,100,0);
 
-
+        // Displayy Game over..
         drawChar(180, 240, 'G', WHITE, 0, 5);
         drawChar(210, 240, 'A', WHITE, 0, 5);
         drawChar(240, 240, 'M', WHITE, 0, 5);
@@ -382,7 +405,8 @@ int main() {
         drawChar(420, 240, 'R', WHITE, 0, 5);
         drawChar(450, 240, '!', WHITE, 0, 5);
         drawChar(480, 240, '!', WHITE, 0, 5);
-        
+
+        // Wait here untill restart button is pressed.
         buttons_status = register_read(RESTART_PIN_REG);
         printf("0x%08x\n", buttons_status);
         while (buttons_status == 0){
