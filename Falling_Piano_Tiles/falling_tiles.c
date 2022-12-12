@@ -393,7 +393,7 @@ int main() {
         fillRect(MID_VERT_TILES,(green_indx*4),40,100,0);
         fillRect(RIGHT_VERT_TILES,(cyan_indx*4),40,100,0);
 
-        // Displayy Game over..
+        // Displayy Game over.
         drawChar(180, 240, 'G', WHITE, 0, 5);
         drawChar(210, 240, 'A', WHITE, 0, 5);
         drawChar(240, 240, 'M', WHITE, 0, 5);
@@ -414,7 +414,8 @@ int main() {
             printf("0x%08x\n", buttons_status);
             sleep_ms(10);
         }
-
+        
+        // Clear the screen, and reset the score.
         fillRect(180,240,400,100,0);
         curr_score = 0;
         update_score(curr_score);
