@@ -17,7 +17,18 @@ pico_enable_stdio_usb(falling_tiles 1)
 pico_enable_stdio_uart(falling_tiles 0)
 
 # must match with executable name and source file names
-target_sources(falling_tiles PRIVATE falling_tiles.c vga_graphics.c registers.h ./audio_notes/A_major.h ./audio_notes/B_major.h ./audio_notes/E_major.h)
+target_sources(falling_tiles
+    PRIVATE 
+    falling_tiles.c
+    vga_graphics.c
+    registers.h
+    ./audio_notes/A_major.h
+    ./audio_notes/B_major.h
+    ./audio_notes/E_major.h
+    ./audio_notes/Din_2.h
+    ./audio_notes/Tin_2.h
+    ./audio_notes/Na_2.h
+    )
 
 # must match with executable name
 target_link_libraries(falling_tiles PRIVATE pico_stdlib pico_multicore hardware_pio hardware_dma hardware_adc hardware_pwm)

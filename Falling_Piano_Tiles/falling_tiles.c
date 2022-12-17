@@ -54,6 +54,7 @@
 // Audio PIN is to match some of the design guide shields. 
 #define AUDIO_PIN_LEFT 28  // you can change this to whatever you like
 #define AUDIO_PIN_RIGHT 15  // you can change this to whatever you like
+#define DELAY_CYCLES 5
 
 /* 
  * This include brings in static arrays which contain audio samples. 
@@ -63,6 +64,9 @@
 #include "audio_notes/A_major.h"
 #include "audio_notes/E_major.h"
 #include "audio_notes/B_major.h"
+#include "audio_notes/Din_2.h"
+#include "audio_notes/Tin_2.h"
+#include "audio_notes/Na_2.h"
 int wav_position = 0;
 int flag_start = 0;
 int audio_note_indx = 0;
@@ -83,21 +87,33 @@ void pwm_interrupt_handler() {
         // allow the pwm value to repeat for 8 cycles this is >>3 
         if (audio_note_indx == 0) {
             if (interception_side == 0 || interception_side == 1) {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_NA[wav_position>>3]+20);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_A[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_NA[(wav_position>>3) - DELAY_CYCLES]-20);
+                }
             }
         } else if (audio_note_indx == 1) {
             if (interception_side == 0 || interception_side == 1) {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_DIN[wav_position>>3]+20);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_B[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_DIN[(wav_position>>3) - DELAY_CYCLES]-20);
+                }
             }
         } else {
             if (interception_side == 0 || interception_side == 1) {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_TIN[wav_position>>3]+20);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_E[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_LEFT, WAV_DATA_TIN[(wav_position>>3) - DELAY_CYCLES]-20);
+                }
             }
         }
         wav_position++;
@@ -123,22 +139,33 @@ void pwm_interrupt_handler_2() {
         // allow the pwm value to repeat for 8 cycles this is >>3 
         if (audio_note_indx == 0) {
             if (interception_side == 1 || interception_side == 2) {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_A[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_NA[wav_position>>3]);
             } else {
-                sleep_ms(10);
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_A[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_NA[(wav_position>>3) - DELAY_CYCLES]-80);
+                }
             }
         } else if (audio_note_indx == 1) {
             if (interception_side == 1 || interception_side == 2) {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_B[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_DIN[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_B[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_DIN[(wav_position>>3) - DELAY_CYCLES]-80);
+                }
             }
         } else {
             if (interception_side == 1 || interception_side == 2) {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_E[wav_position>>3]);
+                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_TIN[wav_position>>3]);
             } else {
-                pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_E[wav_position>>3]-40);
+                if (((wav_position>>3) - DELAY_CYCLES) <= 0) {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, 0);
+                } else {
+                    pwm_set_gpio_level(AUDIO_PIN_RIGHT, WAV_DATA_TIN[(wav_position>>3) - DELAY_CYCLES]-80);
+                }
             }
         }
         wav_position++;
@@ -176,7 +203,7 @@ uint act_adc() {
     uint adc_x_raw = adc_read();
     uint adc_x = 0;
 
-    if (adc_x_raw > 2000 && adc_x_raw < 2060) {
+    if (adc_x_raw > 1600 && adc_x_raw < 2400) {
         adc_x = 2048;
     } else {
         adc_x = adc_x_raw;
@@ -184,7 +211,7 @@ uint act_adc() {
 
     adc_x = (adc_x * 100) / 4095;
 
-    /* printf("%d, %d\n", adc_x, adc_x_raw); */
+    printf("%d, %d\n", adc_x, adc_x_raw);
     
     if (adc_x == 50){
         fillRect(MID_VERT,460,60,20,WHITE);
@@ -411,7 +438,7 @@ int main() {
         printf("0x%08x\n", buttons_status);
         while (buttons_status == 0){
             buttons_status = register_read(RESTART_PIN_REG);
-            printf("0x%08x\n", buttons_status);
+            /* printf("0x%08x\n", buttons_status); */
             sleep_ms(10);
         }
         
