@@ -1,6 +1,6 @@
 # ESE5190-Final-Project
 
-The directory structure is as follows,
+The directory structure is as follows:
 
 ```
 .
@@ -33,3 +33,23 @@ The directory structure is as follows,
 
 14 directories, 12 files
 ```
+
+Here all the folders in the `Testing` directory show our progress from animating a basic block on the screen to a complete game. Whereas the `Falling_Piano_Tiles`
+directory contains the final source code for our project.
+
+<br>
+</br>
+
+## Block Diagram
+
+![block_diagram](https://user-images.githubusercontent.com/56625259/210120526-0d660312-8178-4246-ae59-7a8a795c566c.png)
+
+## Circuit Connections
+
+Following are diagrams illustrating the connections for each of the components:
+
+### VGA 
+![VGA_Connections](https://user-images.githubusercontent.com/56625259/210120542-493dc54d-5762-4910-bd44-da62e299a2ef.jpg)
+
+### Complete Circuit
+![Circuit_Connections](https://user-images.githubusercontent.com/56625259/210120550-ba9e78b0-7c7a-42e5-8551-9077f2b706ac.jpg)
