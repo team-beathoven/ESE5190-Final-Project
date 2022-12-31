@@ -44,6 +44,9 @@ directory contains the final source code for our project.
 
 ![block_diagram](https://user-images.githubusercontent.com/56625259/210120526-0d660312-8178-4246-ae59-7a8a795c566c.png)
 
+<br>
+</br>
+
 ## Circuit Connections
 
 Following are diagrams illustrating the connections for each of the components:
