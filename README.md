@@ -55,4 +55,4 @@ Following are diagrams illustrating the connections for each of the components:
 ![VGA_Connections](https://user-images.githubusercontent.com/56625259/210120542-493dc54d-5762-4910-bd44-da62e299a2ef.jpg)
 
 ### Complete Circuit
-![Circuit_Connections](https://user-images.githubusercontent.com/56625259/210120550-ba9e78b0-7c7a-42e5-8551-9077f2b706ac.jpg)
+![Circuit_Connections](https://user-images.githubusercontent.com/56625259/210121905-0ba90e56-1425-43ed-bf8a-166c5939c087.jpg)
